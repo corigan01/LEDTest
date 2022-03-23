@@ -25,8 +25,8 @@
 #include "FastLED.h"
 
 // Physical INFO
-#define LED_PIN     7
-#define NUM_LEDS    100
+#define LED_PIN     6
+#define NUM_LEDS    300
 
 // Basic Colors
 #define BLACK {0, 0, 0}
@@ -83,7 +83,7 @@ void auto_count_down_animation() {
     for (int i = 0; i <= NUM_LEDS - 1; i++) {
         leds[i] = TeamColor;
         FastLED.show();
-        delay((15000 / NUM_LEDS) - 20);
+        delay((15000 / NUM_LEDS));
     }
 
     blink(BLACK, TeamColor);
@@ -119,40 +119,63 @@ void switch_swap(CRGB a, CRGB b) {
 
 void setup() {
     FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
-}
 
-void loop() {
+    Serial.begin(9600);
+
     init_animation();
 
     delay(1000);
 
+
     unloaded_animation();
+}
 
-    delay(2000);
+char input = ' ';
+char last_input = ' ';
 
-    connected_animation();
-    connected_animation();
-    connected_animation();
-    connected_animation();
+void loop() {
+  
+    if (Serial.available()) {
+       last_input = Serial.read();
+       Serial.write(last_input);
+       
+       if (last_input != '\n') {
+          input = last_input;
+       }
+    }
 
-    nice_clear(PURPLE);
+    CRGB c = CRGB(random(0, 255), random(0, 255), random(0, 255));
 
-    delay(1000);
-
-    auto_count_down_animation();
-
-    delay(1000);
-
-    shoot_animation();
-
-    delay(1000);
-
-    switch_swap(BLUE, RED);
-    switch_swap(BLUE, RED);
-    switch_swap(BLUE, RED);
-
-    nice_clear(BLUE);
-
-    delay(10000);
-
+    switch (input) {
+      case '1':
+        connected_animation();
+        break;
+      case '2':
+        nice_clear(PURPLE);
+        input = ' ';
+        break;
+      case '3':
+        auto_count_down_animation();
+        nice_clear(TeamColor);
+        input = ' ';
+        break;
+      case '4':
+        shoot_animation();
+        input = ' ';
+        break;
+      case '5':
+        switch_swap(BLUE, RED);
+        break;
+      case '6':
+        
+        for (int i = 0; i < NUM_LEDS; i++) {
+          leds[i] = c;
+        }
+        FastLED.show();
+        input = ' ';
+        break;
+        
+      default:
+        break;
+    }
 }
